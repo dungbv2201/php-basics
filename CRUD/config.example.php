@@ -4,7 +4,7 @@ function getConfigDb(){
         'host' => '127.0.0.1',
         'port' => '3306',
         'db_name' => '',
-        'username'=> 'vandung',
-        'password' => 'vandung94'
+        'username'=> '',
+        'password' => ''
     ];
 }
