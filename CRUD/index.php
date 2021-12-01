@@ -1,10 +1,11 @@
 <?php
-    require_once __DIR__ . '/handlers/connectDb.php';
-    $pdo = connectDb();
-    $query = "SELECT * FROM users";
-    $statement = $pdo->prepare($query);
-    $statement->execute();
-    $users = $statement->fetchAll(\PDO::FETCH_OBJ);
+session_start();
+require_once __DIR__ . '/handlers/connectDb.php';
+$pdo = connectDb();
+$query = "SELECT * FROM users";
+$statement = $pdo->prepare($query);
+$statement->execute();
+$users = $statement->fetchAll(\PDO::FETCH_OBJ);
 ?>
 
 <!doctype html>
@@ -17,19 +18,38 @@
     <title>User List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <style>
-        .user-list{
-
+        .alert{
+			display: block;
+			opacity: 1;
+			transition: 03s;
         }
     </style>
 </head>
 <body>
-    <section class="user-list mt-5">
+    <section class="user-list">
         <div class="container">
+			<div class="row justify-content-end">
+				<?php if(isset($_SESSION['created'])): ?>
+					<div class="alert alert-success mt-2 col-md-3" role="alert">
+						Created user successfully!
+					</div>
+				<?php endif; ?>
+				<?php if(isset($_SESSION['deleteSuccess'])): ?>
+					<div class="alert alert-success mt-2 col-md-3" role="alert">
+						<?php echo $_SESSION['deleteSuccess']?>
+					</div>
+				<?php endif; ?>
+				<?php if(isset($_SESSION['errorDelete'])): ?>
+					<div class="alert alert-danger mt-2 col-md-3" role="alert">
+						<?php echo $_SESSION['errorDelete']?>
+					</div>
+				<?php endif; ?>
+			</div>
             <div class="row justify-content-center">
-                <div class="col-12 d-flex justify-content-between">
+                <div class="col-12 d-flex justify-content-between mt-2">
                     <h2 class="col">User list</h2>
                     <div class="col">
-                        <a href="create.php" class="btn btn-success mr-0" style="float: right">Create</a>
+                        <a href="create.php" class="btn btn-primary mr-0" style="float: right">Create</a>
                     </div>
                 </div>
                 <table class="table table-striped table-hover col-md-8">
@@ -38,7 +58,9 @@
                         <th scope="col">#</th>
                         <th scope="col">First</th>
                         <th scope="col">Last</th>
-                        <th scope="col">Handle</th>
+                        <th scope="col">Email</th>
+                        <th scope="col" width="200px">Date of birth</th>
+                        <th scope="col" width="150px">Action</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -46,18 +68,63 @@
                         <tr>
                             <td scope="row" colspan="4" class="text-center">Empty data</td>
                         </tr>
-                    <?php else: ?>
+                    <?php else:
+						foreach ($users as $key => $user):
+					?>
                         <tr>
-                            <th scope="row" colspan="4">1</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>@mdo</td>
+                            <th scope="row">
+								<?= $user->id ?>
+							</th>
+                            <td><?= $user->first_name ?></td>
+                            <td><?= $user->last_name ?></td>
+                            <td><?= $user->email ?></td>
+                            <td><?= $user->date_of_birth ?></td>
+                            <td>
+								<a href="<?= 'show.php?id='.$user->id ?>" class="btn btn-warning mr-2">Edit</a>
+								<form action="handlers/delete.php" method="post"
+									  class="form-delete"
+									  style="display: inline-block">
+									<input type="hidden" name="id" value="<?= $user->id ?>">
+									<button class="btn btn-danger btn-delete">Delete</button>
+								</form>
+							</td>
                         </tr>
-                    <?php endif; ?>
+                    <?php
+                    	endforeach;
+					endif;
+					?>
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
+	<script>
+		document.addEventListener('DOMContentLoaded',function(){
+			const alertEl = document.querySelector('.alert')
+			if(alertEl){
+				setTimeout(()=>{
+					alertEl.remove();
+				},3500)
+			}
+
+			function deleteUser(){
+				const els = document.querySelectorAll('.form-delete')
+				for(el of els){
+					el.addEventListener('click',function(){
+						const result = confirm('Are you sure want to delete user?');
+						if(result){
+							this.submit();
+						}
+					})
+				}
+			}
+			deleteUser()
+		})
+	</script>
 </body>
 </html>
+<?php
+	unset($_SESSION['created']);
+	unset($_SESSION['errorDelete']);
+	unset($_SESSION['deleteSuccess']);
+?>
