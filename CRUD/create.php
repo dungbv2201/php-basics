@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/handlers/helpers.php';
-
+$old = $_SESSION['old'] ?? null;
 ?>
 <!doctype html>
 <html lang="en">
@@ -41,6 +41,7 @@ require_once __DIR__ . '/handlers/helpers.php';
                         class="form-control"
                         id="firstName"
                         name="first_name"
+						value="<?= $old['first_name'] ?>"
                     >
                     <?php echo renderInValid('first_name') ?>
                 </div>
@@ -51,7 +52,8 @@ require_once __DIR__ . '/handlers/helpers.php';
                         class="form-control"
                         id="lastName"
                         name="last_name"
-                    >
+						value="<?= $old['last_name'] ?>"
+					>
                     <?php echo renderInValid('last_name') ?>
                 </div>
                 <div class="mb-3">
@@ -60,6 +62,7 @@ require_once __DIR__ . '/handlers/helpers.php';
                         type="email"
                         class="form-control"
                         name="email"
+						value="<?= $old['email'] ?>"
                         id="email">
                     <?php echo renderInValid('email') ?>
                 </div>
@@ -70,7 +73,8 @@ require_once __DIR__ . '/handlers/helpers.php';
                         class="form-control"
                         id="password"
                         name="password"
-                    >
+						value="<?= $old['password'] ?>"
+					>
                     <?php echo renderInValid('password') ?>
                 </div>
                 <div class="mb-3">
@@ -80,7 +84,8 @@ require_once __DIR__ . '/handlers/helpers.php';
                         class="form-control"
                         id="dateOfBirth"
                         name="date_of_birth"
-                    >
+						value="<?= $old['date_of_birth'] ?>"
+					>
                     <?php echo renderInValid('date_of_birth') ?>
                 </div>
                 <div class="mb-3">

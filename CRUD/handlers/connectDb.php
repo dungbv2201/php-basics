@@ -16,3 +16,9 @@ function connectDb(){
     }
     return $connect;
 }
+
+function findOne($pdo,$query){
+   $statement = $pdo->prepare($query);
+   $statement->execute();
+   return $statement->fetch(\PDO::FETCH_OBJ);
+}

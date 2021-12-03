@@ -1,11 +1,27 @@
 <?php
 session_start();
 require_once __DIR__ . '/handlers/connectDb.php';
+define("PER_PAGE", 5);
+
 $pdo = connectDb();
-$query = "SELECT * FROM users";
-$statement = $pdo->prepare($query);
-$statement->execute();
-$users = $statement->fetchAll(\PDO::FETCH_OBJ);
+$name = $_GET['name'] ?? '';
+$searchName = '%%';
+if($name){
+	$searchName = '%'.$name.'%';
+}
+$page = $_GET["page"] ?? 1;
+$query = "SELECT count(id) AS total FROM users";
+$totalRecord = findOne($pdo,$query)->total;
+$totalPage = ceil($totalRecord/PER_PAGE);
+$offset = ($page -1) * PER_PAGE + 1;
+$users = paginate($pdo, $searchName, $offset, PER_PAGE);
+
+function paginate($pdo, $searchName, $offset, $limit){
+	$query = "SELECT * FROM users WHERE first_name LIKE :name LIMIT $limit OFFSET $offset";
+	$statement = $pdo->prepare($query);
+	$statement->execute(["name" => $searchName]);
+	return $statement->fetchAll(\PDO::FETCH_OBJ);
+}
 ?>
 
 <!doctype html>
@@ -52,6 +68,17 @@ $users = $statement->fetchAll(\PDO::FETCH_OBJ);
                         <a href="create.php" class="btn btn-primary mr-0" style="float: right">Create</a>
                     </div>
                 </div>
+				<div>
+					<form class="mb-3 d-flex col-6 justify-content-between">
+						<div class="col-sm-9">
+							<input type="text"
+								   name="name"
+								   value="<?= $name ?>"
+								   class="form-control" id="staticEmail">
+						</div>
+						<button class="col-sm-2 btn btn-success ml-4">Search</button>
+					</form>
+				</div>
                 <table class="table table-striped table-hover col-md-8">
                     <thead>
                     <tr>
@@ -95,6 +122,29 @@ $users = $statement->fetchAll(\PDO::FETCH_OBJ);
 					?>
                     </tbody>
                 </table>
+				<?php if($totalPage > 1):?>
+					<nav aria-label="Page navigation example">
+						<ul class="pagination">
+							<?php if($page > 1):?>
+								<li class="page-item">
+									<a class="page-link" href="index.php?page=<?=$key -1?>">Previous</a>
+								</li>
+							<?php endif ?>
+							<?php for($i=1;$i<=$totalPage;$i++): ?>
+								<li class="page-item <?php echo $page == $i?'active':''?>">
+									<a class="page-link" href="index.php?page=<?=$i?>">
+										<?=$i?>
+									</a>
+								</li>
+							<?php endfor?>
+							<?php if($page >=1 && $page < $totalPage):?>
+								<li class="page-item">
+									<a class="page-link" href="index.php?page=<?=$key +1?>">Next</a>
+								</li>
+							<?php endif ?>
+						</ul>
+					</nav>
+				<?php endif; ?>
             </div>
         </div>
     </section>
